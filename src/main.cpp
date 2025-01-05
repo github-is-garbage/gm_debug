@@ -10,7 +10,9 @@ int luaopen_debug(lua_State* L) // Manually reimplement because unresolved exter
 	luaopen_debug_type luaopen_debug_fn = (luaopen_debug_type)Loader_LuaShared.GetSymbol("luaopen_debug");
 
 	if (luaopen_debug_fn)
-		luaopen_debug_fn(L);
+		return luaopen_debug_fn(L);
+	else
+		return 0;
 }
 
 LUA_FUNCTION(debug_getregistry)
@@ -21,7 +23,11 @@ LUA_FUNCTION(debug_getregistry)
 
 GMOD_MODULE_OPEN()
 {
-	luaopen_debug(LUA->GetState());
+	if (!luaopen_debug(LUA->GetState()))
+	{
+		LUA->ThrowError("Failed to load debug library");
+		return 0;
+	}
 
 	LUA->PushSpecial(GarrysMod::Lua::SPECIAL_GLOB);
 	{
